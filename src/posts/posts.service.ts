@@ -3,6 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Post } from './post.entity';
 import { Repository, DataSource } from 'typeorm';
 
+/**
+ * Service handling post operations including creation, retrieval, and interaction counts
+ */
 @Injectable()
 export class PostsService {
   constructor(
@@ -11,6 +14,10 @@ export class PostsService {
     private readonly dataSource: DataSource,
   ) {}
 
+  /**
+   * Retrieves all posts with their like and comment counts
+   * @returns Array of posts with metadata including like and comment counts
+   */
   async getAllPostsWithCounts() {
     const posts = await this.postsRepository.find({
       order: { timestamp: 'DESC' },
@@ -19,6 +26,7 @@ export class PostsService {
 
     const postsWithCounts = await Promise.all(
       posts.map(async (post) => {
+        // Get like and comment counts for each post
         const [likeCount, commentCount] = await Promise.all([
           this.dataSource
             .getRepository('likes')
@@ -28,6 +36,7 @@ export class PostsService {
             .count({ where: { post: { id: post.id } } }),
         ]);
 
+        // Return post with metadata and user info
         return {
           ...post,
           likeCount,
@@ -45,6 +54,12 @@ export class PostsService {
     return postsWithCounts;
   }
 
+  /**
+   * Creates a new post
+   * @param wallet_address - Ethereum wallet address of the post creator
+   * @param content - Content of the post
+   * @returns The created post
+   */
   async createPost(wallet_address: string, content: string): Promise<Post> {
     const post = this.postsRepository.create({
       wallet_address,
@@ -54,6 +69,11 @@ export class PostsService {
     return this.postsRepository.save(post);
   }
 
+  /**
+   * Retrieves a single post with its comments and like count
+   * @param id - Post ID
+   * @returns Post with full details including comments and metadata
+   */
   async getPostById(id: number): Promise<any> {
     const post = await this.postsRepository.findOne({
       where: { id },
@@ -62,11 +82,12 @@ export class PostsService {
 
     if (!post) return null;
 
-    console.log(post);
+    // Get like count for the post
     const likeCount = await this.dataSource
       .getRepository('likes')
       .count({ where: { post: { id } } });
 
+    // Return post with full details
     return {
       ...post,
       likeCount,

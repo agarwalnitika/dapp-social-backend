@@ -11,6 +11,10 @@ import {
   JoinColumn,
 } from 'typeorm';
 
+/**
+ * Entity representing a social media post
+ * Contains relationships to users, likes, and comments
+ */
 @Entity('posts')
 export class Post {
   @PrimaryGeneratedColumn()
@@ -25,6 +29,10 @@ export class Post {
   @Column()
   wallet_address: string;
 
+  /**
+   * Relationship to the user who created the post
+   * Uses wallet_address as the foreign key
+   */
   @ManyToOne(() => User, (user) => user.posts)
   @JoinColumn({
     name: 'wallet_address',
@@ -32,9 +40,17 @@ export class Post {
   })
   user: User;
 
+  /**
+   * One-to-many relationship with likes
+   * Cascade deletes likes when post is deleted
+   */
   @OneToMany(() => Like, (like) => like.post)
   likes: Like[];
 
+  /**
+   * One-to-many relationship with comments
+   * Cascade deletes comments when post is deleted
+   */
   @OneToMany(() => Comment, (comment) => comment.post)
   comments: Comment[];
 }
