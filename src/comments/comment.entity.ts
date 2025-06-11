@@ -12,7 +12,7 @@ export class Comment {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ nullable: true })
   wallet_address: string;
 
   @Column({ nullable: true })
@@ -21,6 +21,6 @@ export class Comment {
   @CreateDateColumn()
   timestamp: Date;
 
-  @ManyToOne(() => Post, (post) => post.comments)
+  @ManyToOne(() => Post, (post) => post.comments, { onDelete: 'CASCADE' })
   post: Post;
 }

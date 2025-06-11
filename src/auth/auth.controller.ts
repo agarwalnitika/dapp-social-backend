@@ -1,22 +1,24 @@
+// src/auth/auth.controller.ts
 import { Controller, Post, Body, BadRequestException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
-  @Post('verify')
-  async verifySignature(@Body() body: { address: string; signature: string }) {
-    const { address, signature } = body;
-    if (!address || !signature) {
-      throw new BadRequestException('Missing address or signature');
+  @Post('verify') // or just '/' if preferred
+  async authenticate(
+    @Body() body: { message: string; signature: string; address: string },
+  ) {
+    try {
+      const { access_token } = await this.authService.login(
+        body.address,
+        body.signature,
+      );
+
+      return { success: true, token: access_token };
+    } catch (err) {
+      throw new BadRequestException(err.message || 'Login failed');
     }
-
-    const isValid = await this.authService.verifySignature(address, signature);
-    if (!isValid) {
-      throw new BadRequestException('Invalid signature');
-    }
-
-    return { message: 'Signature verified', address };
   }
 }

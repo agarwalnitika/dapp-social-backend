@@ -1,26 +1,36 @@
+import { Comment } from 'src/comments/comment.entity';
+import { Like } from 'src/likes/like.entity';
+import { User } from 'src/users/user.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  CreateDateColumn,
+  ManyToOne,
   OneToMany,
+  CreateDateColumn,
+  JoinColumn,
 } from 'typeorm';
-import { Like } from '../likes/like.entity';
-import { Comment } from '../comments/comment.entity';
 
 @Entity('posts')
 export class Post {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ default: '0xdeadbeef', nullable: false })
-  wallet_address: string;
-
-  @Column({ default: 'empty', length: 280, nullable: false })
+  @Column()
   content: string;
 
   @CreateDateColumn()
   timestamp: Date;
+
+  @Column()
+  wallet_address: string;
+
+  @ManyToOne(() => User, (user) => user.posts)
+  @JoinColumn({
+    name: 'wallet_address',
+    referencedColumnName: 'wallet_address',
+  })
+  user: User;
 
   @OneToMany(() => Like, (like) => like.post)
   likes: Like[];

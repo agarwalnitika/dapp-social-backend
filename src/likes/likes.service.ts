@@ -30,7 +30,7 @@ export class LikesService {
   async unlikePost(postId: number, wallet_address: string): Promise<string> {
     const existingLike = await this.likeRepo.findOne({
       where: { wallet_address, post: { id: postId } },
-      relations: ['post'],
+      relations: ['posts'],
     });
 
     if (!existingLike) {

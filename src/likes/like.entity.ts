@@ -1,23 +1,23 @@
+import { Post } from 'src/posts/post.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
-  Column,
   ManyToOne,
+  Column,
   CreateDateColumn,
 } from 'typeorm';
-import { Post } from '../posts/post.entity';
 
 @Entity('likes')
 export class Like {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Post, (post) => post.likes)
-  post: Post;
-
-  @Column()
+  @Column({ nullable: true })
   wallet_address: string;
 
   @CreateDateColumn()
   timestamp: Date;
+
+  @ManyToOne(() => Post, (post) => post.likes, { onDelete: 'CASCADE' })
+  post: Post;
 }

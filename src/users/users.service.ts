@@ -14,7 +14,25 @@ export class UsersService {
     return this.usersRepo.findOneBy({ wallet_address: wallet });
   }
 
-  async createOrUpdate(user: User): Promise<User> {
-    return this.usersRepo.save(user); // Creates or updates based on primary key
+  async createOrUpdate(user: Partial<User>): Promise<User> {
+    const existingUser = await this.usersRepo.findOne({
+      where: { wallet_address: user.wallet_address },
+    });
+
+    if (!existingUser) {
+      // Create new user with defaults if not provided
+      const newUser = this.usersRepo.create({
+        wallet_address: user.wallet_address,
+        username: user.username || `user_${user.wallet_address?.slice(2, 6)}`,
+        bio: user.bio || '',
+        profile_picture_url:
+          user.profile_picture_url || 'https://i.pravatar.cc/150',
+      });
+      return await this.usersRepo.save(newUser);
+    }
+
+    // Update existing user with provided fields
+    const updatedUser = this.usersRepo.merge(existingUser, user);
+    return await this.usersRepo.save(updatedUser);
   }
 }

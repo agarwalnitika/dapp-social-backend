@@ -26,6 +26,9 @@ export class PostsService {
           this.dataSource
             .getRepository('comments')
             .count({ where: { post: { id: post.id } } }),
+          // this.dataSource
+          //   .getRepository('users')
+          //   .findOne({ where: { id: post.wallet_address } }),
         ]);
 
         return {
