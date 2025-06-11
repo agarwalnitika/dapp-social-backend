@@ -14,9 +14,9 @@ export class PostsService {
   async getAllPostsWithCounts() {
     const posts = await this.postsRepository.find({
       order: { timestamp: 'DESC' },
+      relations: ['user'],
     });
 
-    console.log(posts);
     const postsWithCounts = await Promise.all(
       posts.map(async (post) => {
         const [likeCount, commentCount] = await Promise.all([
@@ -26,15 +26,18 @@ export class PostsService {
           this.dataSource
             .getRepository('comments')
             .count({ where: { post: { id: post.id } } }),
-          // this.dataSource
-          //   .getRepository('users')
-          //   .findOne({ where: { id: post.wallet_address } }),
         ]);
 
         return {
           ...post,
           likeCount,
           commentCount,
+          user: {
+            walletAddress: post.user?.wallet_address,
+            username: post.user?.username,
+            profilePicture: post.user?.profile_picture_url,
+            bio: post.user?.bio,
+          },
         };
       }),
     );
@@ -54,11 +57,12 @@ export class PostsService {
   async getPostById(id: number): Promise<any> {
     const post = await this.postsRepository.findOne({
       where: { id },
-      relations: ['comments'],
+      relations: ['comments', 'comments.user', 'user'],
     });
 
     if (!post) return null;
 
+    console.log(post);
     const likeCount = await this.dataSource
       .getRepository('likes')
       .count({ where: { post: { id } } });
@@ -67,7 +71,24 @@ export class PostsService {
       ...post,
       likeCount,
       commentCount: post.comments.length,
-      comments: post.comments,
+      user: {
+        walletAddress: post.user?.wallet_address,
+        username: post.user?.username,
+        profilePicture: post.user?.profile_picture_url,
+        bio: post.user?.bio,
+      },
+      comments: post.comments.map((comment) => ({
+        id: comment.id,
+        content: comment.content,
+        timestamp: comment.timestamp,
+        wallet_address: comment.wallet_address,
+        user: {
+          walletAddress: comment.user?.wallet_address,
+          username: comment.user?.username,
+          profilePicture: comment.user?.profile_picture_url,
+          bio: comment.user?.bio,
+        },
+      })),
     };
   }
 }

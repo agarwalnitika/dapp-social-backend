@@ -4,8 +4,10 @@ import {
   Column,
   ManyToOne,
   CreateDateColumn,
+  JoinColumn,
 } from 'typeorm';
 import { Post } from '../posts/post.entity';
+import { User } from 'src/users/user.entity';
 
 @Entity('comments')
 export class Comment {
@@ -21,6 +23,18 @@ export class Comment {
   @CreateDateColumn()
   timestamp: Date;
 
-  @ManyToOne(() => Post, (post) => post.comments, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Post, (post) => post.comments, {
+    onDelete: 'CASCADE',
+  })
   post: Post;
+
+  @ManyToOne(() => User, (user) => user.comments, {
+    eager: false,
+    nullable: true,
+  })
+  @JoinColumn({
+    name: 'wallet_address',
+    referencedColumnName: 'wallet_address',
+  })
+  user: User;
 }
